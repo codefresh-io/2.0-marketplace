@@ -1,7 +1,9 @@
 # Changelog
 
-## v0.0.1 (?)
+## v0.0.2( INSERT DATE HERE)
 
-### task
+Added something awesome
 
-short description
+## v0.0.1 ( INSERT DATE HERE)
+
+Initial version

@@ -20,7 +20,7 @@ Anyone who builds many Argo workflows knows that after a while you end up reusin
 * [Ask for a new Workflow](#Ask-for-a-new-Workflow)
 
 ## Main Features
-* [Extensive UI for visualization and navigation](#Extensive-ui-for-visualization-and-navigation) 
+* [Extensive UI for visualization and navigation](#Extensive-ui-for-visualization-and-navigation)
 * [WorkflowTemplate and inner template breakdown](#WorkflowTemplate-and-inner-template-breakdown)
 * [WorkflowTemplate manifest conventions](#WorkflowTemplate-manifest-conventions)
 * [Hub file system Structure](#Hub-file-system-Structure)
@@ -41,6 +41,7 @@ To build an extensive UI while still using use of the original Kubernetes manife
 
 #### WorkflowTemplate annotations
 * `argo-hub/version` - sem version (0.0.2)
+* `argo-hub/name` - name of the template
 * `argo-hub/description` - description to be shown
 * `argo-hub/license` - license (MIT)
 * `argo-hub/owner_name` - github user name to appear in the site
@@ -54,7 +55,7 @@ To build an extensive UI while still using use of the original Kubernetes manife
 #### Inner template annotations
 * `argo-hub-template/description` - description for specific template
 * `argo-hub-template/icon_url` - icon for specific template
-* `argo-hub-template/icon_background` - background for icon 
+* `argo-hub-template/icon_background` - background for icon
 
 
 ### Hub file system Structure
@@ -71,7 +72,7 @@ Every workflowTemplate folder has the following structure and files: <br>
 Every version folder has the following structure and files: <br>
 * `workflowTemplate.yaml` - the main manifest that follows the [conventions](#WorkflowTemplate-manifest-conventions)
 * `rbac.yaml` - a single file with 3 required manifests that provides the permissions for workflow template
-* `images` folder - each sub-folder results in a docker build according to the inner Dockerfile, and is automatically built scanned and pushed to argo-hub registry: `quay.io/codefreshplugins/argo-hub-workflows-{NAME}-versions-${VERSION}-${IMAGE_FOLDER_NAME}:main`
+* `images` folder - each sub-folder results in a docker build according to the inner Dockerfile, and is automatically built scanned and pushed to argo-hub registry: `quay.io/codefreshplugins/argo-hub-{NAME}-${IMAGE_FOLDER_NAME}:${VERSION}-main`
 * `docs` folder - contains documentation for every template within the workflowTemplate (name be identical to the template name)
 
 ### Versioning
@@ -83,7 +84,7 @@ A full release life cycle has been built to do the following:
 * validate that the changes adhere to the conventions (coming soon, for now manually by reviewer)
 * build all images defined in the `image` folder (#Automatic-image-building-and-security-scanning)
 * scan the built images
-* push the images into public quay registry 
+* push the images into public quay registry
 
 ### Automatic image building and security scanning
 Workflow tasks often involve complex scripts with dependencies that have to be installed manually, wasting valuable execution time and complexing the workflow. <br>
@@ -99,7 +100,7 @@ Eventually Argo Hub is simple, being a set of reusable Kubernetes manifests (wor
 There are different ways to be able to consume the workflowTemplates:
 
 * Applying a workflow template directly to your Kubernetes cluster
-just use `kubectl apply -f {file}` and apply a specific filer or folder 
+just use `kubectl apply -f {file}` and apply a specific filer or folder
 
 * Using Argo CD you can easily get the entire argo hub by getting it automatically applied to your cluster using the GitOps approach. <br>
 
@@ -140,7 +141,3 @@ First thing to do is to fork the repository.
 ## Ask for a new Workflow
 
 Please fill a github issue or thumb up an existing one
-
-
-
-

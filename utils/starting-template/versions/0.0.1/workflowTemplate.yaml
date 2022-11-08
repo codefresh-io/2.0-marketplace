@@ -3,14 +3,15 @@ kind: WorkflowTemplate
 metadata:
   name: argo-hub.starting-template.0.0.1
   annotations:
+    argo-hub/name: 'Starting Template'
     argo-hub/version: '0.0.1'
     argo-hub/description: 'Starting template'
     argo-hub/categories: 'argo'
     argo-hub/license: 'MIT'
-    argo-hub/owner_name: 'Itai Gendler'
-    argo-hub/owner_email: 'itai@codefresh.io'
-    argo-hub/owner_avatar: 'https://avatars.githubusercontent.com/u/10414627?s=120&v=4'
-    argo-hub/owner_url: 'https://github.com/itai-codefresh'
+    argo-hub/owner_name: 'Your Name'
+    argo-hub/owner_email: 'your_email@domain.com'
+    argo-hub/owner_avatar: 'https://github.com/USER_ID.png'
+    argo-hub/owner_url: 'https://github.com/USER_ID'
     argo-hub/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/starting-template/assets/icon.svg"
     argo-hub/icon_background: "#81D4FA"
 spec:
@@ -28,6 +29,8 @@ spec:
       container:
         name: main
         imagePullPolicy: Always
-        image: alpine
+        # format of the image created by the Full Release Cycle [https://github.com/codefresh-io/argo-hub#Full-release-life-cycle]
+        # quay.io/codefreshplugins/argo-hub/{TEMPLATE_FOLDER_NAME}-{IMAGE_FOLDER}:{VERSION}-main
+        image: quay.io/codefreshplugins/argo-hub-starting-template-task:0.0.1-main
         command:
           - echo {{ inputs.parameters.TEXT }}
