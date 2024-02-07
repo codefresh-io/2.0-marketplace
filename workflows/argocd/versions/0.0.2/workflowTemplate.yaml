@@ -1,0 +1,261 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: argo-hub.argocd.0.0.2
+  annotations:
+    argo-hub/version: '0.0.2'
+    argo-hub/description: 'Templates that execute operations against an ArgoCD application'
+    argo-hub/license: 'MIT'
+    argo-hub/owner_name: 'Jesse Antoszyk'
+    argo-hub/owner_email: 'Jesse.Antoszyk@codefresh.io'
+    argo-hub/owner_avatar: 'https://avatars.githubusercontent.com/u/22500761?v=4'
+    argo-hub/owner_url: 'https://github.com/jcantosz'
+    argo-hub/categories: 'argocd,deploy'
+    argo-hub/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/argocd/assets/icon.svg"
+    argo-hub/icon_background: "#f4f4f4"
+
+spec:
+  # default arguments
+  arguments:
+    parameters:
+    # The app to run the argo command against
+    - name: app
+      value: ""
+    # Flags specific to the command you are running (i.e. -l "my-label")
+    - name: flags
+      value: ""
+    # The url for communicating with the ArgoCD server
+    # i.e. argocd-server.<namespace>.svc.cluster.local
+    - name: serverUrl
+      value: ""
+    # Global command line options to pass to the ArgoCD CLI
+    - name: opts
+      value: ""
+    # The Kubernetes secret with the token to communicate with ArgoCD
+    - name: tokenSecret
+      value: "argocd-token"
+    # The key name in the Kubernetes secret with the token to communicate with ArgoCD
+    - name: tokenSecretKey
+      value: "token"
+    # The Kubernetes 'Kind' to use with argo app actions command
+    - name: appKind
+      value: "Rollout"
+    # The ID to roll back to if performing a rollback
+    - name: rollbackId
+      value: ""
+    # Set xtrace or not (echo the command before running it). Valid options are -o (xtrace on) and +o (xtrace off). default is -o
+    - name: xtraceOption
+      value: '-o'
+
+  templates:
+  # ArgoCD app sync
+  # Cannot just anchor the whole list item because overrides will not function properlc
+  - name: sync
+    serviceAccountName: &serviceAccountName argo-hub.argocd.0.0.2
+    metadata:
+      annotations: &annotations
+        argo-hub-template/description: 'Sync an application in ArgoCD'
+        argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/argocd/assets/icon.svg"
+        argo-hub-template/icon_background: "#f4f4f4"
+    # Container info
+    container: &container
+      # Image, command and arguments to use
+      image: quay.io/codefreshplugins/argo-hub-workflows-argocd-versions-0.0.2-images-argocd-cli:main
+      # xtrace
+      command: ['sh', '{{inputs.parameters.xtraceOption}}', 'xtrace', '-c']
+      args:
+      - 'argocd app sync {{inputs.parameters.app}} {{inputs.parameters.flags}}'
+      env:
+      # URL to communicate with ArgoCD
+      - name: ARGOCD_SERVER
+        value: '{{inputs.parameters.serverUrl}}'
+      # Token to use to communicate with ArgoCD
+      - name: ARGOCD_AUTH_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: '{{inputs.parameters.tokenSecret}}'
+            key: '{{inputs.parameters.tokenSecretKey}}'
+      # CLI falgs to use
+      - name: ARGOCD_OPTS
+        value: '{{inputs.parameters.opts}}'
+    # Parameters users can set/override
+    inputs: &inputs
+      parameters:
+      # The app to run the argo command against
+      - name: app
+        default: ""
+      # Flags specific to the command you are running (i.e. -l "my-label")
+      - name: flags
+        default: ""
+      # The url for communicating with the ArgoCD server
+      # i.e. argocd-server.<namespace>.svc.cluster.local
+      - name: serverUrl
+      # Global command line options to pass to the ArgoCD CLI
+      - name: opts
+        default: ""
+      # The Kubernetes secret with the token to communicate with ArgoCD
+      - name: tokenSecret
+        default: "argocd-token"
+      # The key name in the Kubernetes secret with the token to communicate with ArgoCD
+      - name: tokenSecretKey
+        default: "token"
+      # The Kubernetes 'Kind' to use with argo app actions command
+      - name: appKind
+        default: "Rollout"
+      # The ID to roll back to if performing a rollback
+      - name: rollbackId
+        default: ""
+      # Set xtrace or not (echo the command before running it). Valid options are -o (xtrace on) and +o (xtrace off). default is -o
+      - name: xtraceOption
+        default: "-o"
+
+  # Wait for an app status
+  - name: wait
+    serviceAccountName: *serviceAccountName
+    metadata:
+      annotations:
+        argo-hub-template/description: 'Wait for an application to get into a desired state in ArgoCD'
+        <<: *annotations
+    container:
+      <<: *container
+      args:
+      - 'argocd app wait {{inputs.parameters.app}} {{inputs.parameters.flags}}'
+    inputs:
+      <<: *inputs
+
+  - name: rollback
+    serviceAccountName: *serviceAccountName
+    metadata:
+      annotations:
+        argo-hub-template/description: 'Rollback an application to a given ID in ArgoCD'
+        <<: *annotations
+    container:
+      <<: *container
+      args:
+      - 'argocd app rollback {{inputs.parameters.app}} {{inputs.parameters.rollbackId}} {{inputs.parameters.flags}}'
+    inputs:
+      <<: *inputs
+
+  # Actions
+  # ==============================================================================================================================
+  # https://argoproj.github.io/argo-rollouts/FAQ/#can-we-run-the-argo-rollouts-kubectl-plugin-commands-via-argo-cd
+  # https://argoproj.github.io/argo-rollouts/features/restart/
+  #
+  # Actions available to rollout:
+  # $ argocd app actions list demo
+  # argoproj.io  Rollout  simple-rollout  abort         true
+  # argoproj.io  Rollout  simple-rollout  promote-full  true
+  # argoproj.io  Rollout  simple-rollout  restart       false
+  # argoproj.io  Rollout  simple-rollout  resume        true
+  # argoproj.io  Rollout  simple-rollout  retry         true
+
+  # Abort a rollout
+  - name: action-abort
+    serviceAccountName: *serviceAccountName
+    metadata:
+      annotations:
+        argo-hub-template/description: 'Run the abort action against an application (rollout) in ArgoCD'
+        <<: *annotations
+    container:
+      <<: *container
+      args:
+      - 'argocd app actions run {{inputs.parameters.app}} abort --kind {{inputs.parameters.appKind}} {{inputs.parameters.flags}}'
+    inputs:
+      <<: *inputs
+
+  # Promote-full a rollout
+  - name: action-promote-full
+    serviceAccountName: *serviceAccountName
+    metadata:
+      annotations:
+        argo-hub-template/description: 'Run the promote-full action against an application (rollout) in ArgoCD'
+        <<: *annotations
+    container:
+      <<: *container
+      args:
+      - 'argocd app actions run {{inputs.parameters.app}} promote-full --kind {{inputs.parameters.appKind}} {{inputs.parameters.flags}}'
+    inputs:
+      <<: *inputs
+
+  # Restart a rollout
+  - name: action-restart
+    serviceAccountName: *serviceAccountName
+    metadata:
+      annotations:
+        argo-hub-template/description: 'Run the restart action against an application in ArgoCD'
+        <<: *annotations
+    container:
+      <<: *container
+      args:
+      - 'argocd app actions run {{inputs.parameters.app}} restart --kind {{inputs.parameters.appKind}} {{inputs.parameters.flags}}'
+    inputs:
+      <<: *inputs
+
+  # Resume a rollout
+  - name: action-resume
+    serviceAccountName: *serviceAccountName
+    metadata:
+      annotations:
+        argo-hub-template/description: 'Run the resume action against an application (rollout) in ArgoCD'
+        <<: *annotations
+    container:
+      <<: *container
+      args:
+      - 'argocd app actions run {{inputs.parameters.app}} resume --kind {{inputs.parameters.appKind}} {{inputs.parameters.flags}}'
+    inputs:
+      <<: *inputs
+
+  # Retry a rollout
+  - name: action-retry
+    serviceAccountName: *serviceAccountName
+    metadata:
+      annotations:
+        argo-hub-template/description: 'Run the retry action against an application (rollout) in ArgoCD'
+        <<: *annotations
+    container:
+      <<: *container
+      args:
+      - 'argocd app actions run {{inputs.parameters.app}} retry --kind {{inputs.parameters.appKind}} {{inputs.parameters.flags}}'
+    inputs:
+      <<: *inputs
+
+  # List applications
+  - name: list
+    serviceAccountName: *serviceAccountName
+    metadata:
+      annotations:
+        argo-hub-template/description: 'List applications in ArgoCD'
+        <<: *annotations
+    container:
+      <<: *container
+      args:
+      - 'argocd app list {{inputs.parameters.flags}} | tee /tmp/app.list'
+    inputs:
+      <<: *inputs
+    outputs:
+      parameters:
+      - name: apps
+        valueFrom:
+          path: /tmp/app.list
+  # ==============================================================================================================================
+
+  # Get application history
+  - name: history
+    serviceAccountName: *serviceAccountName
+    metadata:
+      annotations:
+        argo-hub-template/description: "Show an application's history in ArgoCD"
+        <<: *annotations
+    container:
+      <<: *container
+      args:
+      - 'argocd app history {{inputs.parameters.app}} {{inputs.parameters.flags}} | tee /tmp/app.history'
+    inputs:
+      <<: *inputs
+    outputs:
+      parameters:
+      - name: history
+        valueFrom:
+          path: /tmp/app.history
+
+
