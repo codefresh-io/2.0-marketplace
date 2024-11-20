@@ -1,0 +1,25 @@
+{
+  "name": "image-enricher-jira-info",
+  "version": "0.0.3",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.js",
+    "lint": "eslint"
+  },
+  "engines": {
+    "node": "14.18.1"
+  },
+  "dependencies": {
+    "bluebird": "3.7.2",
+    "lodash": "4.17.15",
+    "request-promise": "4.2.5",
+    "request": "2.88.2",
+    "jira-connector": "^3.1.0",
+    "chalk": "^4.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.21.2"
+  }
+}

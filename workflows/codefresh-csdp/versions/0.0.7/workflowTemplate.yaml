@@ -1,0 +1,352 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: argo-hub.codefresh-csdp.0.0.7
+  annotations:
+    argo-hub/version: '0.0.7'
+    argo-hub/name: 'CSDP-metadata'
+    argo-hub/description: 'Templates that execute operations against CSDP'
+    argo-hub/license: 'MIT'
+    argo-hub/owner_name: 'Vadim Kharin'
+    argo-hub/owner_email: 'vadim.kharin@codefresh.io'
+    argo-hub/owner_avatar: 'https://avatars.githubusercontent.com/u/58422638?v=4'
+    argo-hub/owner_url: 'https://github.com/vadim-kharin-codefresh'
+    argo-hub/categories: 'messaging'
+    argo-hub/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/codefresh-csdp/assets/csdp-icon.svg"
+    argo-hub/icon_background: "#142E48"
+spec:
+  templates:
+    - name: image-enricher-git-info
+      serviceAccountName: argo-hub.codefresh-csdp.0.0.7
+      metadata:
+        annotations:
+          argo-hub-template/description: 'Enrich images with metadata and annotation such as PR, commits, committers'
+          argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/codefresh-csdp/assets/icon.svg"
+          argo-hub-template/icon_background: "#171A2D"
+      retryStrategy:
+        limit: "10"
+        retryPolicy: "Always"
+        backoff:
+          duration: "5s"
+      inputs:
+        parameters:
+          - name: API_PATH_PREFIX
+            default: ''
+          - name: GITHUB_API
+            default: ''
+          - name: CF_URL
+            default: ''
+          - name: GITHUB_HOST
+            default: 'github.com'
+          - name: GITHUB_TOKEN
+            default: ''
+          - name: GITHUB_TOKEN_SECRET_KEY
+            default: 'token'
+          - name: GIT_PROVIDER_NAME
+            default: ''
+          - name: IMAGE
+          - name: BRANCH
+          - name: REPO
+          - name: CF_API_KEY
+          - name: CF_API_KEY_SECRET_KEY
+            default: 'token'
+
+      container:
+        name: main
+        imagePullPolicy: Always
+        image: quay.io/codefreshplugins/argo-hub-workflows-codefresh-csdp-versions-0.0.7-images-image-enricher-git-info:main
+        command:
+          - node
+          - /app/src/index.js
+        env:
+          - name: API_PATH_PREFIX
+            value: '{{ inputs.parameters.API_PATH_PREFIX }}'
+          - name: GITHUB_API
+            value: '{{ inputs.parameters.GITHUB_API }}'
+          - name: CF_URL
+            value: '{{ inputs.parameters.CF_URL }}'
+          - name: GITHUB_HOST
+            value: '{{ inputs.parameters.GITHUB_HOST }}'
+          - name: IMAGE_SHA
+            value: '{{ inputs.parameters.IMAGE }}'
+          - name: BRANCH
+            value: '{{ inputs.parameters.BRANCH }}'
+          - name: REPO
+            value: '{{ inputs.parameters.REPO }}'
+          - name: GIT_PROVIDER_NAME
+            value: '{{ inputs.parameters.GIT_PROVIDER_NAME }}'
+          - name: CF_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.CF_API_KEY }}'
+                key: '{{ inputs.parameters.CF_API_KEY_SECRET_KEY }}'
+          - name: GITHUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.GITHUB_TOKEN }}'
+                key: '{{ inputs.parameters.GITHUB_TOKEN_SECRET_KEY }}'
+    - name: image-enricher-jira-info
+      serviceAccountName: argo-hub.codefresh-csdp.0.0.7
+      metadata:
+        annotations:
+          argo-hub-template/description: 'Enrich images with metadata and annotation such as ticket number, title, assignee, status'
+          argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/codefresh-csdp/assets/icon.svg"
+          argo-hub-template/icon_background: "#171A2D"
+      retryStrategy:
+        limit: "10"
+        retryPolicy: "Always"
+        backoff:
+          duration: "5s"
+      inputs:
+        parameters:
+          - name: CF_URL
+            default: ''
+          - name: FAIL_ON_NOT_FOUND
+            default: 'false'
+          - name: JIRA_CONTEXT
+            default: ''
+          - name: JIRA_HOST
+            default: ''
+          - name:  JIRA_API_TOKEN_SECRET
+            default: ''
+          - name:  JIRA_API_TOKEN_SECRET_KEY
+            default: 'token'
+          - name:  JIRA_EMAIL_SECRET_KEY
+            default: 'email'
+          - name: JIRA_PROJECT_PREFIX
+          - name: CF_API_KEY
+          - name: CF_API_KEY_SECRET_KEY
+            default: 'token'
+          - name: IMAGE
+          - name: MESSAGE
+
+      container:
+        name: main
+        imagePullPolicy: Always
+        image: quay.io/codefreshplugins/argo-hub-workflows-codefresh-csdp-versions-0.0.7-images-image-enricher-jira-info:main
+        command:
+          - node
+          - /app/src/index.js
+        env:
+          - name: CF_URL
+            value: '{{ inputs.parameters.CF_URL }}'
+          - name: FAIL_ON_NOT_FOUND
+            value: '{{ inputs.parameters.FAIL_ON_NOT_FOUND }}'
+          - name: JIRA_CONTEXT
+            value: '{{ inputs.parameters.JIRA_CONTEXT }}'
+          - name: JIRA_HOST
+            value: '{{ inputs.parameters.JIRA_HOST }}'
+          - name: JIRA_PROJECT_PREFIX
+            value: '{{ inputs.parameters.JIRA_PROJECT_PREFIX }}'
+          - name: IMAGE
+            value: '{{ inputs.parameters.IMAGE }}'
+          - name: MESSAGE
+            value: '{{ inputs.parameters.MESSAGE }}'
+          - name: CF_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.CF_API_KEY }}'
+                key: '{{ inputs.parameters.CF_API_KEY_SECRET_KEY }}'
+          - name: JIRA_API_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_API_TOKEN_SECRET }}'
+                key: '{{ inputs.parameters.JIRA_API_TOKEN_SECRET_KEY }}'
+          - name: JIRA_EMAIL
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_API_TOKEN_SECRET }}'
+                key: '{{ inputs.parameters.JIRA_EMAIL_SECRET_KEY }}'
+    - name: report-image-info
+      serviceAccountName: argo-hub.codefresh-csdp.0.0.7
+      metadata:
+        annotations:
+          argo-hub-template/description: 'Report image info to argo platform'
+          argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/codefresh-csdp/assets/icon.svg"
+          argo-hub-template/icon_background: "#171A2D"
+      retryStrategy:
+        limit: "10"
+        retryPolicy: "Always"
+        backoff:
+          duration: "5s"
+      volumes:
+        - name: gcr-key-file
+          secret:
+            items:
+              - key: '{{ inputs.parameters.GCR_KEY_SECRET_KEY }}'
+                path: key.json
+            secretName: '{{ inputs.parameters.GCR_KEY_SECRET }}'
+            optional: true
+        - name: docker-config
+          secret:
+            items:
+              - key: '{{ inputs.parameters.DOCKER_CONFIG_SECRET_KEY }}'
+                path: config.json
+            secretName: '{{ inputs.parameters.DOCKER_CONFIG_SECRET }}'
+            optional: true
+
+      inputs:
+        parameters:
+          - name: AWS_ACCESS_KEY
+            default: 'cf-not-exist'
+          - name: AWS_SECRET_KEY
+            default: 'cf-not-exist'
+          - name: AWS_REGION
+            default: 'cf-not-exist'
+          - name: AWS_ROLE_SECRET
+            default: 'cf-not-exist'
+          - name: GCR_KEY_FILE_PATH
+            default: ''
+          - name: DOCKER_CONFIG_FILE_PATH
+            default: ''
+          - name: DOCKER_USERNAME
+            default: 'cf-not-exist'
+          - name: DOCKER_PASSWORD
+            default: 'cf-not-exist'
+          - name: USERNAME
+            default: 'cf-not-exist'
+          - name: PASSWORD
+            default: 'cf-not-exist'
+          - name: DOMAIN
+            default: 'cf-not-exist'
+          - name: INSECURE
+            default: 'false'
+          - name: RETRIEVE_CREDENTIALS_BY_DOMAIN
+            default: 'false'
+          - name: CF_HOST
+            default: 'https://g.codefresh.io'
+          - name: GIT_SENDER_LOGIN
+            default: ''
+          - name:  WORKFLOW_NAME
+            default: ''
+          - name: IMAGE
+          - name: CF_API_KEY
+          - name: GIT_BRANCH
+            default: ''
+          - name: GIT_REVISION
+            default: ''
+          - name: GIT_COMMIT_MESSAGE
+            default: ''
+          - name: GIT_COMMIT_URL
+            default: ''
+
+          - name: USERNAME_SECRET_KEY
+            default: 'username'
+          - name: PASSWORD_SECRET_KEY
+            default: 'password'
+          - name: DOMAIN_SECRET_KEY
+            default: 'domain'
+          - name: CF_API_KEY_SECRET_KEY
+            default: 'token'
+          - name: AWS_ACCESS_KEY_SECRET_KEY
+            default: 'aws-access-key'
+          - name: AWS_SECRET_KEY_SECRET_KEY
+            default: 'aws-secret-key'
+          - name: AWS_REGION_SECRET_KEY
+            default: 'aws-region'
+          - name: GCR_KEY_SECRET
+            default: 'gcr-key-file'
+          - name: GCR_KEY_SECRET_KEY
+            default: '.keyjson'
+          - name: DOCKER_CONFIG_SECRET
+            default: 'docker-registry'
+          - name: DOCKER_CONFIG_SECRET_KEY
+            default: '.dockerconfigjson'
+          - name: AWS_ROLE_SECRET_KEY
+            default: 'role'
+      container:
+        name: main
+        imagePullPolicy: Always
+        image: quay.io/codefreshplugins/argo-hub-workflows-codefresh-csdp-versions-0.0.7-images-report-image-info:main
+        volumeMounts:
+          - name: gcr-key-file
+            mountPath: /gcr/
+          - name: docker-config
+            mountPath: /.docker/
+        command:
+          - node
+          - index.js
+        env:
+          - name: GCR_KEY_FILE_PATH
+            value: '{{ inputs.parameters.GCR_KEY_FILE_PATH }}'
+          - name: DOCKER_CONFIG_FILE_PATH
+            value: '{{ inputs.parameters.DOCKER_CONFIG_FILE_PATH }}'
+          - name: RETRIEVE_CREDENTIALS_BY_DOMAIN
+            value: '{{ inputs.parameters.RETRIEVE_CREDENTIALS_BY_DOMAIN }}'
+          - name: CF_HOST
+            value: '{{ inputs.parameters.CF_HOST }}'
+          - name: IMAGE_URI
+            value: '{{ inputs.parameters.IMAGE }}'
+          - name: GIT_BRANCH
+            value: '{{ inputs.parameters.GIT_BRANCH }}'
+          - name: GIT_REVISION
+            value: '{{ inputs.parameters.GIT_REVISION }}'
+          - name: GIT_COMMIT_MESSAGE
+            value: '{{ inputs.parameters.GIT_COMMIT_MESSAGE }}'
+          - name: GIT_COMMIT_URL
+            value: '{{ inputs.parameters.GIT_COMMIT_URL }}'
+          - name: INSECURE
+            value: '{{ inputs.parameters.INSECURE }}'
+          - name: GIT_SENDER_LOGIN
+            value: '{{ inputs.parameters.GIT_SENDER_LOGIN }}'
+          - name: WORKFLOW_NAME
+            value: '{{ inputs.parameters.WORKFLOW_NAME }}'
+          - name: CF_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.CF_API_KEY }}'
+                key: '{{ inputs.parameters.CF_API_KEY_SECRET_KEY }}'
+          - name: AWS_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.AWS_ACCESS_KEY }}'
+                optional: true
+                key: '{{ inputs.parameters.AWS_ACCESS_KEY_SECRET_KEY }}'
+          - name: AWS_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.AWS_SECRET_KEY }}'
+                optional: true
+                key: '{{ inputs.parameters.AWS_SECRET_KEY_SECRET_KEY }}'
+          - name: AWS_ROLE
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.AWS_ROLE_SECRET }}'
+                optional: true
+                key: '{{ inputs.parameters.AWS_ROLE_SECRET_KEY }}'
+          - name: AWS_REGION
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.AWS_REGION }}'
+                optional: true
+                key: '{{ inputs.parameters.AWS_REGION_SECRET_KEY }}'
+          - name: DOCKER_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.DOCKER_USERNAME }}'
+                optional: true
+                key: '{{ inputs.parameters.USERNAME_SECRET_KEY }}'
+          - name: DOCKER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.DOCKER_PASSWORD }}'
+                optional: true
+                key: '{{ inputs.parameters.PASSWORD_SECRET_KEY }}'
+          - name: USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.USERNAME }}'
+                optional: true
+                key: '{{ inputs.parameters.USERNAME_SECRET_KEY }}'
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.PASSWORD }}'
+                optional: true
+                key: '{{ inputs.parameters.PASSWORD_SECRET_KEY }}'
+          - name: DOMAIN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.DOMAIN }}'
+                optional: true
+                key: '{{ inputs.parameters.DOMAIN_SECRET_KEY }}'

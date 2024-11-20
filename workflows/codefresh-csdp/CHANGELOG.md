@@ -82,6 +82,11 @@ Add WORKFLOW_URL and LOGS_URL to report-image-info
 ### image-enricher-git-info
 Added information about commits to the image
 
+## v0.0.7 (29.03.2022)
+
+### image-enricher-git-info
+Added information about commits to the image
+
 ## v0.0.6 (14.2.2022)
 
 ### report-image-info

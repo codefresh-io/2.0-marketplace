@@ -1,0 +1,16 @@
+{
+  "name": "report-image-info",
+  "version": "1.0.2",
+  "main": "diff.js",
+  "license": "MIT",
+  "engines": {
+    "node": "14.18.1"
+  },
+  "devDependencies": {
+    "lodash": "^4.17.21",
+    "nodegistry": "^1.1.0",
+    "graphql-request": "^3.7.0",
+    "graphql": "^16.1.0",
+    "@codefresh-io/docker-reference": "^0.0.11"
+  }
+}
