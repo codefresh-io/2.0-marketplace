@@ -1,0 +1,72 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: argo-hub.heroku.0.0.1
+  annotations:
+    argo-hub/version: '0.0.1'
+    argo-hub/description: 'Heroku template'
+    argo-hub/categories: 'argo'
+    argo-hub/license: 'MIT'
+    argo-hub/owner_name: 'Matthew Chung'
+    argo-hub/owner_email: 'matthew.chung@codefresh.io'
+    argo-hub/owner_avatar: 'https://github.com/matthewchungcodefresh.png'
+    argo-hub/owner_url: 'https://github.com/matthewchungcodefresh'
+    argo-hub/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/heroku/assets/icon.svg"
+    argo-hub/icon-background: "#f4f4f4"
+spec:
+  templates:
+    - name: heroku-deployer
+      serviceAccountName: argo-hub.heroku.0.0.1
+      metadata:
+        annotations:
+          argo-hub-template/description: 'Deploy to heroku via codefresh pipeline'
+          argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/heroku/assets/icon.svg"
+          argo-hub-template/icon_background: "#f4f4f4"
+      retryStrategy:
+        limit: "3"
+        retryPolicy: "Always"
+        backoff:
+          duration: "5s"
+      inputs:
+        artifacts:
+          - name: REPO
+            path: /tmp/repo
+        parameters:
+          # required
+          - name: HEROKU_SECRET
+            default: heroku-secret
+          - name: HEROKU_API_TOKEN_SECRET_KEY
+            default: token
+          - name: HEROKU_EMAIL_SECRET_KEY
+            default: email
+          - name: APP_NAME
+          # optional
+          - name: WORKING_DIRECTORY
+            default: "."
+      script:
+        imagePullPolicy: Always
+        image: quay.io/codefreshplugins/argo-hub-heroku-heroku-manager:0.0.1-main
+
+        workingDir: /tmp/repo
+        env:
+          - name: HEROKU_API_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.HEROKU_SECRET }}'
+                key: '{{ inputs.parameters.HEROKU_API_TOKEN_SECRET_KEY }}'
+          - name: HEROKU_EMAIL
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.HEROKU_SECRET }}'
+                key: '{{ inputs.parameters.HEROKU_EMAIL_SECRET_KEY }}'
+          - name: APP_NAME
+            value: '{{ inputs.parameters.APP_NAME }}'
+          - name: WORKING_DIRECTORY
+            value: '{{ inputs.parameters.WORKING_DIRECTORY }}'
+        command: [sh]
+        source: |
+          printf "machine api.heroku.com\n  login $HEROKU_EMAIL\n  password $HEROKU_API_TOKEN\nmachine git.heroku.com\n  login $HEROKU_EMAIL\n  password $HEROKU_API_TOKEN\n" > ~/.netrc
+          cd $WORKING_DIRECTORY
+          heroku create $APP_NAME || true
+          heroku git:remote --app $APP_NAME
+          git push heroku master --force
