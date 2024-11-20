@@ -1,0 +1,109 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: argo-hub.codefresh-classic.0.0.2
+  annotations:
+    argo-hub/version: '0.0.2'
+    argo-hub/description: 'Templates that execute operations against the Codefresh classic platform'
+    argo-hub/license: 'MIT'
+    argo-hub/owner_name: 'Itai Gendler'
+    argo-hub/owner_email: 'itai@codefresh.io'
+    argo-hub/owner_avatar: 'https://avatars.githubusercontent.com/u/10414627?s=120&v=4'
+    argo-hub/owner_url: 'https://github.com/itai-codefresh'
+    argo-hub/categories: 'codefresh'
+    argo-hub/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/codefresh-classic/assets/icon.svg"
+    argo-hub/icon_background: "#f4f4f4"
+spec:
+  templates:
+    - name: run-pipeline
+      serviceAccountName: argo-hub.codefresh-classic.0.0.2
+      metadata:
+        annotations:
+          argo-hub-template/description: 'A wrapper on top of Codefresh cli run operation'
+          argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/codefresh-classic/assets/icon.svg"
+          argo-hub-template/icon_background: "#f4f4f4"
+      inputs:
+        parameters:
+          - name: CF_API_KEY_SECRET
+          - name: PIPELINE_NAME
+          - name: TRIGGER_NAME
+          - name: CF_BRANCH
+          - name: EXTRA_OPTIONS
+            default: ''
+          - name: VARIABLES
+            default: ''
+      script:
+        name: main
+        imagePullPolicy: Always
+        image: codefresh/cli
+        env:
+          - name: VARIABLES
+            value: '{{ inputs.parameters.VARIABLES }}'
+          - name: CF_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.CF_API_KEY_SECRET }}'
+                key: token
+        command: [sh]
+        source: |
+          codefresh \
+          run \
+          '{{ inputs.parameters.PIPELINE_NAME }}' \
+          '-b={{ inputs.parameters.CF_BRANCH }}' \
+          '-t={{ inputs.parameters.TRIGGER_NAME }}' \
+          $(echo $VARIABLES | sed 's/,/ /g' | sed -E 's/(^|[ ])/ -v /g') \
+          '{{ inputs.parameters.EXTRA_OPTIONS }}'
+
+    - name: sync-team
+      serviceAccountName: argo-hub.codefresh-classic.0.0.2
+      metadata:
+        annotations:
+          argo-hub-template/description: 'A wrapper on top of Codefresh cli synchronize teams operation'
+          argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/workflows/codefresh-classic/assets/icon.svg"
+          argo-hub-template/icon_background: "#f4f4f4"
+      inputs:
+        parameters:
+          - name: GIT_TOKEN_SECRET
+            default: 'autopilot-secret'
+          - name: GIT_TOKEN_SECRET_KEY
+            default: 'git_token'
+          - name: CF_V1_TOKEN_SECRET
+            default: 'codefresh-v1-token'
+          - name: CF_V1_TOKEN_SECRET_KEY
+            default: 'token'
+          - name: CLIENT_NAME
+            default: my-team
+          - name: CLIENT_TYPE
+            default: github # github, okta, azure
+          - name: OPTIONAL_PARAMS
+            default: " "
+            # --disable-notifications
+      script:
+        image: codefresh/cli
+        imagePullPolicy: Always
+        command: [ bash ]
+        env:
+          - name: CLIENT_NAME
+            value: '{{ inputs.parameters.CLIENT_NAME }}'
+          - name: CLIENT_TYPE
+            value: '{{ inputs.parameters.CLIENT_TYPE }}'
+          - name: CF_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.CF_V1_TOKEN_SECRET }}'
+                key: '{{ inputs.parameters.CF_V1_TOKEN_SECRET_KEY }}'
+          - name: OPTIONAL_PARAMS
+            value: '{{ inputs.parameters.OPTIONAL_PARAMS }}'
+          - name: GIT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.GIT_TOKEN_SECRET }}'
+                key: '{{ inputs.parameters.GIT_TOKEN_SECRET_KEY }}'
+                optional: true
+        # https://codefresh-io.github.io/cli/teams/synchronize-teams/
+        source: |
+          # If we are using github and the token exists/is non-empty
+          if [ ${CLIENT_TYPE} == 'github' ] && [ ! -z ${GIT_TOKEN} ] ; then
+            OPTIONAL_PARAMS="${OPTIONAL_PARAMS} --access-token ${GIT_TOKEN}"
+          fi
+          codefresh synchronize teams ${CLIENT_NAME}  --client-type ${CLIENT_TYPE} ${OPTIONAL_PARAMS}
