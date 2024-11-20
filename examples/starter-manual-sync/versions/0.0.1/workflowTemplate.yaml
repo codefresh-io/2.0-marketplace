@@ -33,7 +33,7 @@ spec:
         tasks:
           - name: sync
             templateRef:
-              name: argo-hub.argocd.0.0.1
+              name: argo-hub.argocd.0.0.2
               template: sync
             arguments:
               parameters:
@@ -52,7 +52,7 @@ spec:
                   value: 'token'
           - name: wait
             templateRef:
-              name: argo-hub.argocd.0.0.1
+              name: argo-hub.argocd.0.0.2
               template: wait
             arguments:
               parameters:
