@@ -126,7 +126,7 @@ spec:
         source: |
           gh pr --repo {{ inputs.parameters.REPO_OWNER }}/{{ inputs.parameters.REPO_NAME }} \
             comment {{ inputs.parameters.PULL_REQUEST_NUMBER }} \
-            --body "{{ inputs.parameters.PR_COMMENT }}"
+            --body '{{ inputs.parameters.PR_COMMENT }}'
         env:
           - name: GITHUB_TOKEN
             valueFrom:
