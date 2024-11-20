@@ -1,0 +1,172 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: argo-hub.image-test-daemon-container.0.0.1
+  annotations:
+    argo-hub/version: '0.0.1'
+    argo-hub/description: 'Workflow template for a deployment that builds and tests an image through service containers'
+    argo-hub/categories: 'argo'
+    argo-hub/license: 'MIT'
+    argo-hub/owner_name: 'Matthew Chung'
+    argo-hub/owner_email: 'matthew.chung@codefresh.io'
+    argo-hub/owner_avatar: 'https://github.com/matthewchungcodefresh.png'
+    argo-hub/owner_url: 'https://github.com/matthewchungcodefresh'
+    argo-hub/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/examples/image-test-workflow/assets/icon.svg"
+    argo-hub/icon_background: "#f4f4f4"
+spec:
+  volumes:
+    - name: docker-config
+      secret:
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+        secretName: '{{ inputs.parameters.DOCKER_CONFIG_SECRET }}'
+  entrypoint: image-test-daemon-container
+  templates:
+    - name: image-test-daemon-container
+      metadata:
+        annotations:
+          argo-hub-template/description: 'Builds a docker image using Kaniko and tests the image through service containers'
+          argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/examples/image-test-workflow/assets/icon.svg"
+          argo-hub-template/icon_background: "#f4f4f4"
+      inputs:
+        parameters:
+          # Create a docker-registry secret with your docker credentials and apply it to your cluster under the runtime namespace
+          # https://jamesdefabia.github.io/docs/user-guide/kubectl/kubectl_create_secret_docker-registry/
+          - name: DOCKER_CONFIG_SECRET
+            default: docker-config  # the name of the registry-creds secret you created
+          # Create MYSQL secret and apply it to your cluster under the runtime namespace
+          #   kubectl create secret generic mysql-secret \
+          #   --from-literal=root-password=$MYSQL_ROOT_PASSWORD --dry-run=client \
+          #   --from-literal=user=$MYSQL_USER --dry-run=client \
+          #   --from-literal=password=$MYSQL_PASSWORD --dry-run=client \
+          #   --save-config -o yaml | kubectl apply -f - -n $NAMESPACE
+          - name: MYSQL_SECRET
+            default: mysql-secret
+          - name: MYSQL_DATABASE
+            default: nodejs
+          - name: MYSQL_HOST
+            default: test_mysql_db
+          - name: REPO
+            default: https://github.com/codefreshdemo/cf-example-unit-tests-with-composition
+          - name: REVISION
+            default: master
+          - name: IMAGE_NAME
+          # Create git secret token and apply it to your cluster under the runtime namespace
+          #   kubectl create secret generic github-token \
+          #   --from-literal=token=$GIT_TOKEN --dry-run=client \
+          #   --save-config -o yaml | kubectl apply -f - -n $NAMESPACE
+          - name: GIT_TOKEN_SECRET
+            default: github-token # the name of the git secret token you applied to your cluster
+          - name: DOCKERFILE
+            default: Dockerfile
+          - name: CONTEXT
+            default: .
+          - name: TAG
+            default: latest
+
+      dag:
+        tasks:
+          # build a docker image through kaniko
+          # https://codefresh.io/argohub/workflow-template/kaniko
+          - name: build-docker-image
+            templateRef:
+              name: argo-hub.kaniko.0.0.1
+              template: build
+            arguments:
+              parameters:
+                - name: REPO
+                  value: '{{ inputs.parameters.REPO }}'
+                - name: REVISION
+                  value: '{{ inputs.parameters.REVISION }}'
+                - name: IMAGE_NAME
+                  value: '{{ inputs.parameters.IMAGE_NAME }}'
+                - name: GIT_TOKEN_SECRET
+                  value: '{{ inputs.parameters.GIT_TOKEN_SECRET }}'
+                - name: DOCKERFILE
+                  value: '{{ inputs.parameters.DOCKERFILE }}'
+                - name: CONTEXT
+                  value: '{{ inputs.parameters.CONTEXT }}'
+                - name: TAG
+                  value: '{{ inputs.parameters.TAG }}'
+
+          # create mysql service container
+          - name: create-service-container
+            dependencies: [build-docker-image]
+            template: mysql-service
+            arguments:
+              parameters:
+                - name: MYSQL_SECRET
+                  value: '{{ inputs.parameters.MYSQL_SECRET }}'
+                - name: MYSQL_DATABASE
+                  value: '{{ inputs.parameters.MYSQL_DATABASE }}'
+                - name: MYSQL_HOST
+                  value: '{{ inputs.parameters.MYSQL_HOST }}'
+
+          # intialize mysql service container and test
+          - name: initialize-service-container
+            dependencies: [create-service-container]
+            template: mysql-client
+            arguments:
+              parameters:
+                - name: IMAGE
+                  value: '{{ inputs.parameters.IMAGE_NAME }}:{{ inputs.parameters.TAG }}'
+
+    - name: mysql-service
+      metadata:
+        annotations:
+          argo-hub-template/description: 'Build service container for MYSQL'
+          argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/examples/image-test-workflow/assets/icon.svg"
+          argo-hub-template/icon_background: "#f4f4f4"
+      inputs:
+        parameters:
+          - name: MYSQL_SECRET
+            default: mysql-secret
+          - name: MYSQL_DATABASE
+          - name: MYSQL_HOST
+      daemon: true
+      container:
+        image: mysql:8.0
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3306
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.MYSQL_SECRET }}'
+                key: root-password
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.MYSQL_USER }}'
+                key: user
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.MYSQL_PASSWORD }}'
+                key: password
+          - name: MYSQL_DATABASE
+            value: '{{ inputs.parameters.MYSQL_DATABASE }}'
+          - name: MYSQL_HOST
+            value: '{{ inputs.parameters.MYSQL_HOST }}'
+
+    - name: mysql-client
+      metadata:
+        annotations:
+          argo-hub-template/description: 'Initialize service container and test image'
+          argo-hub-template/icon_url: "https://cdn.jsdelivr.net/gh/codefresh-io/argo-hub@main/examples/image-test-workflow/assets/icon.svg"
+          argo-hub-template/icon_background: "#f4f4f4"
+      inputs:
+        parameters:
+          - name: IMAGE
+      script:
+        imagePullPolicy: Always
+        image: '{{ inputs.parameters.IMAGE }}'
+        command: [sh]
+        source: |
+          nslookup test_mysql_db
+          nc -z test_mysql_db 3306
+          cd /usr/src/app
+          npm test
