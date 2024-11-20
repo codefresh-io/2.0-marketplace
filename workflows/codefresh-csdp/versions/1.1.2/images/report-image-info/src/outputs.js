@@ -37,7 +37,8 @@ const ensureOutputFilesExists = () => {
 const OUTPUTS = {
     IMAGE_NAME: 'image_name',
     IMAGE_SHA: 'image_sha',
-    EXIT_ERROR: 'exit_error'
+    EXIT_ERROR: 'exit_error',
+    IMAGE_LINK: 'image_link'
 }
 
 ensureOutputFilesExists()

@@ -1,6 +1,6 @@
 // registering error handler
 require('./outputs')
-
+const { parseQualifiedNameOptimized, parseFamiliarName } = require('@codefresh-io/docker-reference')
 const { GraphQLClient, gql, ClientError } = require('graphql-request')
 const _ = require('lodash')
 
@@ -32,6 +32,9 @@ async function main() {
     // store in FS to use as an output param later (in argo workflow)
     storeOutputParam(OUTPUTS.IMAGE_NAME, image)
     storeOutputParam(OUTPUTS.IMAGE_SHA, manifest.config.digest)
+    const repositoryName = _.get(parseFamiliarName(image, parseQualifiedNameOptimized), 'repository')
+    const imageLink = `${inputs.codefresh.host}/2.0/images/${encodeURIComponent(repositoryName)}/${manifest.config.digest}/${encodeURIComponent(image)}`
+    storeOutputParam(OUTPUTS.IMAGE_LINK, imageLink)
 
     const size = manifest.config.size + _.reduce(manifest.layers, (sum, layer) => {
         return sum + layer.size;
