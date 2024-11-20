@@ -8,15 +8,18 @@ import requests
 from jira import JIRA
 from step_utility import StepUtility
 from requests.auth import HTTPBasicAuth
+from jira_auth import JiraAuth
 
 class Environment:
-    def __init__(self, jira_base_url, jira_username, jira_api_key, action,
+    def __init__(self, jira_base_url, auth_method, jira_username, jira_api_key, jira_pat_token, action,
         issue, issue_project, issue_summary, issue_description, issue_type, issue_components, issue_customfields,
         existing_comment_id, comment_body, status, jql_query, jql_query_max_results,
         verbose):
         self.jira_base_url = jira_base_url
+        self.auth_method = auth_method
         self.jira_username = jira_username
         self.jira_api_key = jira_api_key
+        self.jira_pat_token = jira_pat_token
         self.action = action
         self.issue = issue
         self.issue_project = issue_project
@@ -43,8 +46,10 @@ def environment_setup():
     # Grab all of the environment variables
     env = os.environ
     jira_base_url = StepUtility.getEnvironmentVariable('JIRA_BASE_URL', env)
+    jira_auth_method = StepUtility.getEnvironmentVariable('JIRA_AUTH_METHOD', env)
     jira_username = StepUtility.getEnvironmentVariable('JIRA_USERNAME', env)
     jira_api_key = StepUtility.getEnvironmentVariable('JIRA_API_KEY', env)
+    jira_pat_token = StepUtility.getEnvironmentVariable('JIRA_PAT_TOKEN', env)
     action = StepUtility.getEnvironmentVariable('ACTION', env)
 
     # Logic here to use the regex to grab the jira issue key and assign it to issue
@@ -98,8 +103,10 @@ def environment_setup():
 
     current_environment = Environment(
         jira_base_url,
+        jira_auth_method,
         jira_username,
         jira_api_key,
+        jira_pat_token,
         action,
         issue,
         issue_project,
@@ -116,14 +123,10 @@ def environment_setup():
         verbose)
     return current_environment
 
+def authentication(current_environment) -> JIRA:
+    auth = JiraAuth(current_environment)
+    return auth.do_auth()
 
-def authentication(current_environment):
-    # Basic authentication with an API Token
-    jira = JIRA(
-        current_environment.jira_base_url,
-        basic_auth=(current_environment.jira_username, current_environment.jira_api_key)
-    )
-    return jira
 
 
 def step_action(action, authenticated_jira, current_environment):

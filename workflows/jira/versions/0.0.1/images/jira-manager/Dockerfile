@@ -10,7 +10,8 @@ RUN apk add --no-cache libffi libffi-dev
 RUN /usr/local/bin/python -m pip install --upgrade pip
 RUN pip3 install --no-cache-dir jira
 
+WORKDIR /jira
 COPY lib/. /jira/
 
-ENTRYPOINT ["python", "/jira_issue_manager.py"]
+ENTRYPOINT ["python", "jira_issue_manager.py"]
 CMD [""]

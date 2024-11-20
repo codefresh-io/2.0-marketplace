@@ -31,10 +31,16 @@ spec:
       inputs:
         parameters:
           # required
-          - name: JIRA_API_KEY
           - name: JIRA_BASE_URL
-          - name: JIRA_USERNAME
           # optional
+          - name: JIRA_AUTH_METHOD
+            default: 'basic_auth'
+          - name: JIRA_USERNAME
+            default: 'jira-creds'
+          - name: JIRA_API_KEY
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN
+            default: 'jira-creds'
           - name: COMMENT_BODY
             default: ''
           - name: JIRA_API_KEY_SECRET_KEY
@@ -43,6 +49,8 @@ spec:
             default: ''
           - name: JIRA_USERNAME_SECRET_KEY
             default: 'username'
+          - name: JIRA_PAT_TOKEN_SECRET_KEY
+            default: 'pat-token'
       outputs:
         parameters:
           - name: JIRA_COMMENT_ID
@@ -58,6 +66,8 @@ spec:
         env:
           - name: JIRA_BASE_URL
             value: '{{ inputs.parameters.JIRA_BASE_URL }}'
+          - name: JIRA_AUTH_METHOD
+            value: '{{ inputs.parameters.JIRA_AUTH_METHOD }}'
           - name: JIRA_USERNAME
             valueFrom:
               secretKeyRef:
@@ -68,6 +78,11 @@ spec:
               secretKeyRef:
                 name: '{{ inputs.parameters.JIRA_API_KEY }}'
                 key: '{{ inputs.parameters.JIRA_API_KEY_SECRET_KEY }}'
+          - name: JIRA_PAT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_PAT_TOKEN }}'
+                key: '{{ inputs.parameters.JIRA_PAT_TOKEN_SECRET_KEY }}'
           - name: ACTION
             value: 'comment_create'
           - name: COMMENT_BODY
@@ -90,11 +105,19 @@ spec:
       inputs:
         parameters:
           # required
-          - name: JIRA_API_KEY
           - name: JIRA_BASE_URL
-          - name: JIRA_USERNAME
           - name: JIRA_COMMENT_ID
           # optional
+          - name: JIRA_AUTH_METHOD
+            default: 'basic_auth'
+          - name: JIRA_USERNAME
+            default: 'jira-creds'
+          - name: JIRA_API_KEY
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN_SECRET_KEY
+            default: 'pat-token'
           - name: COMMENT_BODY
             default: ''
           - name: JIRA_API_KEY_SECRET_KEY
@@ -113,6 +136,8 @@ spec:
         env:
           - name: JIRA_BASE_URL
             value: '{{ inputs.parameters.JIRA_BASE_URL }}'
+          - name: JIRA_AUTH_METHOD
+            value: '{{ inputs.parameters.JIRA_AUTH_METHOD }}'
           - name: JIRA_USERNAME
             valueFrom:
               secretKeyRef:
@@ -123,6 +148,11 @@ spec:
               secretKeyRef:
                 name: '{{ inputs.parameters.JIRA_API_KEY }}'
                 key: '{{ inputs.parameters.JIRA_API_KEY_SECRET_KEY }}'
+          - name: JIRA_PAT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_PAT_TOKEN }}'
+                key: '{{ inputs.parameters.JIRA_PAT_TOKEN_SECRET_KEY }}'
           - name: ACTION
             value: 'comment_update'
           - name: COMMENT_BODY
@@ -147,10 +177,18 @@ spec:
       inputs:
         parameters:
           # required
-          - name: JIRA_API_KEY
           - name: JIRA_BASE_URL
-          - name: JIRA_USERNAME
           # optional
+          - name: JIRA_AUTH_METHOD
+            default: 'basic_auth'
+          - name: JIRA_USERNAME
+            default: 'jira-creds'
+          - name: JIRA_API_KEY
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN_SECRET_KEY
+            default: 'pat-token'
           - name: JIRA_API_KEY_SECRET_KEY
             default: 'api-key'
           - name: JIRA_USERNAME_SECRET_KEY
@@ -182,6 +220,8 @@ spec:
         env:
           - name: JIRA_BASE_URL
             value: '{{ inputs.parameters.JIRA_BASE_URL }}'
+          - name: JIRA_AUTH_METHOD
+            value: '{{ inputs.parameters.JIRA_AUTH_METHOD }}'
           - name: JIRA_USERNAME
             valueFrom:
               secretKeyRef:
@@ -192,6 +232,11 @@ spec:
               secretKeyRef:
                 name: '{{ inputs.parameters.JIRA_API_KEY }}'
                 key: '{{ inputs.parameters.JIRA_API_KEY_SECRET_KEY }}'
+          - name: JIRA_PAT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_PAT_TOKEN }}'
+                key: '{{ inputs.parameters.JIRA_PAT_TOKEN_SECRET_KEY }}'
           - name: ACTION
             value: 'issue_create'
           - name: ISSUE_PROJECT
@@ -222,10 +267,18 @@ spec:
       inputs:
         parameters:
           # required
-          - name: JIRA_API_KEY
           - name: JIRA_BASE_URL
-          - name: JIRA_USERNAME
           # optional
+          - name: JIRA_AUTH_METHOD
+            default: 'basic_auth'
+          - name: JIRA_USERNAME
+            default: 'jira-creds'
+          - name: JIRA_API_KEY
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN_SECRET_KEY
+            default: 'pat-token'
           - name: JIRA_API_KEY_SECRET_KEY
             default: 'api-key'
           - name: JIRA_ISSUE_SOURCE_FIELD
@@ -250,6 +303,8 @@ spec:
         env:
           - name: JIRA_BASE_URL
             value: '{{ inputs.parameters.JIRA_BASE_URL }}'
+          - name: JIRA_AUTH_METHOD
+            value: '{{ inputs.parameters.JIRA_AUTH_METHOD }}'
           - name: JIRA_USERNAME
             valueFrom:
               secretKeyRef:
@@ -260,6 +315,11 @@ spec:
               secretKeyRef:
                 name: '{{ inputs.parameters.JIRA_API_KEY }}'
                 key: '{{ inputs.parameters.JIRA_API_KEY_SECRET_KEY }}'
+          - name: JIRA_PAT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_PAT_TOKEN }}'
+                key: '{{ inputs.parameters.JIRA_PAT_TOKEN_SECRET_KEY }}'
           - name: ACTION
             value: 'issue_update'
           - name: JIRA_ISSUE_SOURCE_FIELD
@@ -288,10 +348,18 @@ spec:
       inputs:
         parameters:
           # required
-          - name: JIRA_API_KEY
           - name: JIRA_BASE_URL
-          - name: JIRA_USERNAME
           # optional
+          - name: JIRA_AUTH_METHOD
+            default: 'basic_auth'
+          - name: JIRA_USERNAME
+            default: 'jira-creds'
+          - name: JIRA_API_KEY
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN_SECRET_KEY
+            default: 'pat-token'
           - name: JIRA_API_KEY_SECRET_KEY
             default: 'api-key'
           - name: JIRA_USERNAME_SECRET_KEY
@@ -316,6 +384,8 @@ spec:
         env:
           - name: JIRA_BASE_URL
             value: '{{ inputs.parameters.JIRA_BASE_URL }}'
+          - name: JIRA_AUTH_METHOD
+            value: '{{ inputs.parameters.JIRA_AUTH_METHOD }}'
           - name: JIRA_USERNAME
             valueFrom:
               secretKeyRef:
@@ -326,6 +396,11 @@ spec:
               secretKeyRef:
                 name: '{{ inputs.parameters.JIRA_API_KEY }}'
                 key: '{{ inputs.parameters.JIRA_API_KEY_SECRET_KEY }}'
+          - name: JIRA_PAT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_PAT_TOKEN }}'
+                key: '{{ inputs.parameters.JIRA_PAT_TOKEN_SECRET_KEY }}'
           - name: ACTION
             value: 'update_all_from_jql_query'
           - name: ISSUE_DESCRIPTION
@@ -354,10 +429,18 @@ spec:
       inputs:
         parameters:
           # required
-          - name: JIRA_API_KEY
           - name: JIRA_BASE_URL
-          - name: JIRA_USERNAME
           # optional
+          - name: JIRA_AUTH_METHOD
+            default: 'basic_auth'
+          - name: JIRA_USERNAME
+            default: 'jira-creds'
+          - name: JIRA_API_KEY
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN_SECRET_KEY
+            default: 'pat-token'
           - name: JIRA_API_KEY_SECRET_KEY
             default: 'api-key'
           - name: JIRA_USERNAME_SECRET_KEY
@@ -376,6 +459,8 @@ spec:
         env:
           - name: JIRA_BASE_URL
             value: '{{ inputs.parameters.JIRA_BASE_URL }}'
+          - name: JIRA_AUTH_METHOD
+            value: '{{ inputs.parameters.JIRA_AUTH_METHOD }}'
           - name: JIRA_USERNAME
             valueFrom:
               secretKeyRef:
@@ -386,6 +471,11 @@ spec:
               secretKeyRef:
                 name: '{{ inputs.parameters.JIRA_API_KEY }}'
                 key: '{{ inputs.parameters.JIRA_API_KEY_SECRET_KEY }}'
+          - name: JIRA_PAT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_PAT_TOKEN }}'
+                key: '{{ inputs.parameters.JIRA_PAT_TOKEN_SECRET_KEY }}'
           - name: ACTION
             value: 'verify_status'
           - name: JIRA_ISSUE_SOURCE_FIELD
@@ -408,10 +498,18 @@ spec:
       inputs:
         parameters:
           # required
-          - name: JIRA_API_KEY
           - name: JIRA_BASE_URL
-          - name: JIRA_USERNAME
           # optional
+          - name: JIRA_AUTH_METHOD
+            default: 'basic_auth'
+          - name: JIRA_USERNAME
+            default: 'jira-creds'
+          - name: JIRA_API_KEY
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN_SECRET_KEY
+            default: 'pat-token'
           - name: JIRA_API_KEY_SECRET_KEY
             default: 'api-key'
           - name: JIRA_USERNAME_SECRET_KEY
@@ -430,6 +528,8 @@ spec:
         env:
           - name: JIRA_BASE_URL
             value: '{{ inputs.parameters.JIRA_BASE_URL }}'
+          - name: JIRA_AUTH_METHOD
+            value: '{{ inputs.parameters.JIRA_AUTH_METHOD }}'
           - name: JIRA_USERNAME
             valueFrom:
               secretKeyRef:
@@ -440,6 +540,11 @@ spec:
               secretKeyRef:
                 name: '{{ inputs.parameters.JIRA_API_KEY }}'
                 key: '{{ inputs.parameters.JIRA_API_KEY_SECRET_KEY }}'
+          - name: JIRA_PAT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_PAT_TOKEN }}'
+                key: '{{ inputs.parameters.JIRA_PAT_TOKEN_SECRET_KEY }}'
           - name: ACTION
             value: 'verify_status'
           - name: DESIRED_ISSUE_STATUS
@@ -462,10 +567,18 @@ spec:
       inputs:
         parameters:
           # required
-          - name: JIRA_API_KEY
           - name: JIRA_BASE_URL
-          - name: JIRA_USERNAME
           # optional
+          - name: JIRA_AUTH_METHOD
+            default: 'basic_auth'
+          - name: JIRA_USERNAME
+            default: 'jira-creds'
+          - name: JIRA_API_KEY
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN_SECRET_KEY
+            default: 'pat-token'
           - name: JIRA_API_KEY_SECRET_KEY
             default: 'api-key'
           - name: JIRA_USERNAME_SECRET_KEY
@@ -486,6 +599,8 @@ spec:
         env:
           - name: JIRA_BASE_URL
             value: '{{ inputs.parameters.JIRA_BASE_URL }}'
+          - name: JIRA_AUTH_METHOD
+            value: '{{ inputs.parameters.JIRA_AUTH_METHOD }}'
           - name: JIRA_USERNAME
             valueFrom:
               secretKeyRef:
@@ -496,6 +611,11 @@ spec:
               secretKeyRef:
                 name: '{{ inputs.parameters.JIRA_API_KEY }}'
                 key: '{{ inputs.parameters.JIRA_API_KEY_SECRET_KEY }}'
+          - name: JIRA_PAT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_PAT_TOKEN }}'
+                key: '{{ inputs.parameters.JIRA_PAT_TOKEN_SECRET_KEY }}'
           - name: ACTION
             value: 'issue_transition'
           - name: JIRA_ISSUE_SOURCE_FIELD
@@ -520,10 +640,18 @@ spec:
       inputs:
         parameters:
           # required
-          - name: JIRA_API_KEY
           - name: JIRA_BASE_URL
-          - name: JIRA_USERNAME
           # optional
+          - name: JIRA_AUTH_METHOD
+            default: 'basic_auth'
+          - name: JIRA_USERNAME
+            default: 'jira-creds'
+          - name: JIRA_API_KEY
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN
+            default: 'jira-creds'
+          - name: JIRA_PAT_TOKEN_SECRET_KEY
+            default: 'pat-token'
           - name: JIRA_API_KEY_SECRET_KEY
             default: 'api-key'
           - name: JIRA_USERNAME_SECRET_KEY
@@ -546,6 +674,8 @@ spec:
         env:
           - name: JIRA_BASE_URL
             value: '{{ inputs.parameters.JIRA_BASE_URL }}'
+          - name: JIRA_AUTH_METHOD
+            value: '{{ inputs.parameters.JIRA_AUTH_METHOD }}'
           - name: JIRA_USERNAME
             valueFrom:
               secretKeyRef:
@@ -556,6 +686,11 @@ spec:
               secretKeyRef:
                 name: '{{ inputs.parameters.JIRA_API_KEY }}'
                 key: '{{ inputs.parameters.JIRA_API_KEY_SECRET_KEY }}'
+          - name: JIRA_PAT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: '{{ inputs.parameters.JIRA_PAT_TOKEN }}'
+                key: '{{ inputs.parameters.JIRA_PAT_TOKEN_SECRET_KEY }}'
           - name: ACTION
             value: 'issue_transition_and_update'
           - name: JIRA_ISSUE_SOURCE_FIELD
